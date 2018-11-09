@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5.0 FATAL_ERROR)
 
 
-set(CPM_MODULE_NAME startup_lpc11uxx)
+set(CPM_MODULE_NAME startup_lpc11xxx)
 
 #-----------------------------------------------------------------------
 # Required CPM Setup - no need to modify - See: https://github.com/iauns/cpm
@@ -41,8 +41,17 @@ file(GLOB SOURCES
     "${CPM_MODULE_NAME}/src/*.c"
     )
 
+get_directory_property(DEFINITIONS COMPILE_DEFINITIONS)
+if ("CHIP_LPC11UXX" IN_LIST DEFINITIONS)
+    message(STATUS "Got lpc11uxx: choosing USB startup code")
+    set(LINKER_TYPE "lpc11uxx")
+else()
+    message(STATUS "Got lpc11xxx: choosing non-USB startup code")
+    set(LINKER_TYPE "lpc11xxx")
+endif()
+
 set(LINKER_FILE "${CMAKE_CURRENT_LIST_DIR}/${CPM_MODULE_NAME}/\
-11uxx.ld")
+${LINKER_TYPE}.ld")
 set_property(GLOBAL PROPERTY startup_linker "${LINKER_FILE}")
 
 
