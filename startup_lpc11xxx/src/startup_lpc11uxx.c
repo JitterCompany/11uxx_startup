@@ -8,6 +8,22 @@ WEAK void IntDefaultHandler(void);
 WEAK extern void __valid_user_code_checksum();
 
 
+// Code read protection setting. Defaults to none, set one of the defines
+// via CMake
+#if defined(CRP_SETTING_NO_ISP)
+const int crp_setting __attribute__((__used__)) __attribute__ ((section(".crp_setting"))) = 0x4E697370;
+#elif defined(CRP_SETTING_CRP1)
+const int crp_setting __attribute__((__used__)) __attribute__ ((section(".crp_setting"))) = 0x12345678;
+#elif defined(CRP_SETTING_CRP2)
+const int crp_setting __attribute__((__used__)) __attribute__ ((section(".crp_setting"))) = 0x87654321;
+#elif defined(CRP_SETTING_CRP3)
+const int crp_setting __attribute__((__used__)) __attribute__ ((section(".crp_setting"))) = 0x43218765;
+#else
+const int crp_setting __attribute__((__used__)) __attribute__ ((section(".crp_setting"))) = 0;
+#endif
+
+
+
 /* cortex-M0 handlers */
 void NMI_Handler(void) ALIAS(IntDefaultHandler);
 void HardFault_Handler(void) ALIAS(IntDefaultHandler);
