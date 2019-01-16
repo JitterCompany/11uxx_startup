@@ -41,6 +41,8 @@ file(GLOB SOURCES
     "${CPM_MODULE_NAME}/src/*.c"
     )
 
+include_directories("${CPM_MODULE_NAME}")
+
 get_directory_property(DEFINITIONS COMPILE_DEFINITIONS)
 if ("CHIP_LPC11UXX" IN_LIST DEFINITIONS)
     message(STATUS "Got lpc11uxx: choosing USB startup code")

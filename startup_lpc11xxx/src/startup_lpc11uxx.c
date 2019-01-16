@@ -22,6 +22,10 @@ const int crp_setting __attribute__((__used__)) __attribute__ ((section(".crp_se
 const int crp_setting __attribute__((__used__)) __attribute__ ((section(".crp_setting"))) = 0;
 #endif
 
+#ifndef STACK_CANARY
+#define STACK_CANARY 0x5A4B3C2D
+#endif
+
 
 
 /* cortex-M0 handlers */
@@ -185,6 +189,7 @@ void USBWakeup_IRQHandler (void) ALIAS(IntDefaultHandler);
 #endif
 
 extern void _vStackTop(void);
+extern void _pvHeapStart(void);
 
 extern void(*const g_pfnVectors[]) (void);
 __attribute__ ((section(".isr_vector")))
@@ -495,6 +500,16 @@ void bss_init(unsigned int start, unsigned int len)
         *pulDest++ = 0;
 }
 
+__attribute__ ((section(".after_vectors")))
+void stack_init(unsigned int start, unsigned int len, unsigned int val)
+{
+    unsigned int *pulDest = (unsigned int *) start;
+    unsigned int loop;
+    for (loop = 0; loop < len; loop = loop + 4) {
+        *pulDest++ = val++;
+    }
+}
+
 extern unsigned int __data_section_table;
 extern unsigned int __data_section_table_end;
 extern unsigned int __bss_section_table;
@@ -524,6 +539,13 @@ void ResetISR(void)
         SectionLen = *SectionTableAddr++;
         bss_init(ExeAddr, SectionLen);
     }
+
+    // Init stack: initialize the stack memory with canary values.
+    // This enables the user code to check the maximum used memory
+    // by scanning for canary values.
+    stack_init((int)&_pvHeapStart, 
+            (unsigned int)((unsigned int)&_vStackTop - 
+                (unsigned int)&_pvHeapStart), STACK_CANARY);
 
     main();
     while(1);
