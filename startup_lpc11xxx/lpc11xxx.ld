@@ -29,6 +29,10 @@ SECTIONS
         
 
         *(.after_vectors*)
+
+        . = 0x000002FC;
+        KEEP(*(.crp_setting))
+
         
     } >Flash
     
