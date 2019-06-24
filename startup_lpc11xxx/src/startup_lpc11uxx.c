@@ -503,6 +503,17 @@ void bss_init(unsigned int start, unsigned int len)
 __attribute__ ((section(".after_vectors")))
 void stack_init(unsigned int start, unsigned int len, unsigned int val)
 {
+    // Some stack memory is required for running the startup code itself.
+    // To avoid corrupting our own stack, skip the first few bytes.
+    //
+    // Most firmwares will use more than 256 bytes of memory, so skipping 256
+    // has no adverse effects on the result of stack_unused_size().
+    const unsigned int stack_required_startup = 256;
+    if(len < stack_required_startup) {
+        return;
+    }
+    len-=stack_required_startup;
+
     unsigned int *pulDest = (unsigned int *) start;
     unsigned int loop;
     for (loop = 0; loop < len; loop = loop + 4) {
